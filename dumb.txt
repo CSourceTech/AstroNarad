@@ -1,0 +1,886 @@
+User_Question_in_natural_language_which_needs_to_be_answered: "how many calls have happened per day in first week of june"
+
+--------------------------------------------
+
+Current-Step: Step-1-Convert_User_Question_into_Database_Query
+
+--------------------------------------------
+              
+Full-Context: 
+
+The product and UI: This product is about analyzing phone conversations between the agents at a company and the their prospect and customers. This company specifically helps prospects with who owe tax debt either to the IRS or to different states
+
+As a first step all of the calls are analyzed by the AI and a set of pre-configured data points are extracted from each call. These data points and they are mapped is presented below under Database_Schema_In_Detail with relevant mapping of the fields (how they are represented in the database as well as in the UI).
+
+In the UI, the users are given the option to filter through the calls using the parameters listed in the Database_Schema_In_Detail. They will be able to listen to individual calls and also look at the corresponding data extracted from each calls using AI.
+
+However, there is still a need for the user to ask questions in natural language to understand the stats and trends across multiple calls that span certain time frame. This is called the "Ask AI" feature. The number of calls could in dozens, hundreds, thousands or beyond. It is not possible to pass the transcripts corresponding to so many calls to the AI in order to try to answer the user questions. It is also not possible to pass the entire database as represented in Database_Schema_In_Detail. 
+
+Hence, this feature is broken down into two steps involves converting the User_Question_in_natural_language_which_needs_to_be_answered into a Database-Query. Step-2-Generate_answer-for_user-question_based_on_Database_output. AI then generates the final answer to the User-Question_which_needs_to_be_answered.
+
+Step-1-Convert_User-Question_into_Database-Query_and_or_Filter: This step involves converting a user's natural language question into a MongoDB query. It analyzes the user's question using provided guidelines, field mapping, and glossary to generate a MongoDB query that matches the user's intent. This Database-Query is then run against the database and results are obtained. These results are passed to AI again in step 2.  
+
+Step-2-Generate_answer_for_User-Question_based_on_Database_output: In this step, the AI receives the results from the database for the Database-Query generated from Step 1, formats them into a user readable structure, and prepares the output for display in the UI. The formatting aligns with how data is presented in the application.
+
+--------------------------------------------
+
+Objective:
+
+Your objective is to help us implement the "Step-1-Convert_User_Question_into_Database_Query" of the "Ask AI" feature i.e the user's question is provided in natural language and needs to be converted to the appropriate DB query
+
+The input is provided at the top of the prompt under the heading -- "User_Question_in_natural_language_which_needs_to_be_answered:", which is the question made by the user in natural language. You need to interpret the question and understand what information the user is requesting for.
+
+Guidelines, output format, examples on how to identify what the user is looking for is provided to you under the respective sections demarcated by a dashed line '------'. 
+
+You are also provided with the "Database_Schema_In_Detail" from our database that gives you a list of the fields, datatype, description and other details. Use the "Database_Schema_In_Detail" to understand our database schema and fields better. 
+
+You are also provided with the date and time that the user asked their question under "Current Time". Utilize this when the user's question are time-based ("yesterday", "last month", "last week", "last year", etc) so that we can fulfill the user's requirement accurately.
+
+------------------------------------------------------------------------------------------
+
+Task 1(Analysis):
+
+The output will be a JavaScript function to interact with a MongoDB database collection named "DynamicArticle". Ensure that the output format adheres strictly to the provided guidelines. Avoid including extraneous data or text, and follow the specified structure precisely to maintain data consistency and accurate query execution. 
+
+By implementing this feature, you will be helping overall revenue, profitability, compliance, agent performance and training, of the company. Do an excellent job with both tasks to allow user's to query and gain insights on the company's performance, individual's performance, missed opportunities, areas of improvement, common objections, etc.
+
+--------------------------------------------
+
+Output JSON format:
+{
+    "function": "async function getAggregationResults() {
+    try {
+        const results = await DynamicArticle.aggregate([
+            {
+                $match: {
+                    user: new MyObjectId('65040e96e8097b388b1225cd'),
+                    visibility: 'Public',
+                    date_1: {
+                        $gte: new Date("2024-05-07T00:00:00.000Z"),
+                        $lt: new Date("2024-05-14T00:00:00.000Z")
+                    }
+                }
+            },
+            {
+                $project: {
+                    dayOfWeek: { $dayOfWeek: "$date_1" },
+                    date_1: 1,  
+                    convertedToClient: {
+                        $cond: {
+                            if: {
+                                $eq: ["$string_7", "Closed/Won"]
+                            },
+                            then: 1,
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$dayOfWeek",
+                    date: { $first: "$date_1" },  // Select the first date
+                    totalCalls: { $sum: 1 },
+                    conversions: { $sum: "$convertedToClient" }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            }
+        ]);
+
+        return results;
+    }catch (error) {
+        console.error(error);
+    },
+
+}”,
+“AIs_understanding_of_the_user_question”:  “Use the database_schema provided to you to understand the user_question thoroughly and return your (AI) understanding of the user_question. This will be displayed in the UI as ‘Did You Mean’   <AIs_understanding_of_the_user_question>, which the user can review and confirm if AIs understanding of their question is correct. “,
+“Confidence_score_in_the_query_generated_for_the_given_user_question”: “Return out of 100 how confident you are of your understanding of the user_question and how accurate the MongoDB_query that you generated, is for the given user_question”
+}
+
+----------
+
+first Example of the JSON output:
+{
+    "function": "async function getAggregationResults() {
+    try {
+        const results = await DynamicArticle.aggregate([
+            {
+                $match: {
+                    user: new MyObjectId('65040e96e8097b388b1225cd'),
+                    visibility: 'Public',
+                    date_1: {
+                        $gte: new Date("2024-05-07T00:00:00.000Z"),
+                        $lt: new Date("2024-05-14T00:00:00.000Z")
+                    }
+                }
+            },
+            {
+                $project: {
+                    date: { $first: "$date_1" },  // Select the first date
+                    convertedToClient: {
+                        $cond: {
+                            if: {
+                                $eq: ["$string_7", "Closed/Won"]
+                            },
+                            then: 1,
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$dayOfWeek",
+                    dates: { $addToSet: "$date_1" },  // Group dates as an array
+                    totalCalls: { $sum: 1 },
+                    conversions: { $sum: "$convertedToClient" }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            }
+        ]);
+
+        return results;
+    } catch (error) {
+        console.error(error);
+    },
+
+}”,
+“AIs_understanding_of_the_user_question”:  “Use the database_schema provided to you to understand the user_question thoroughly and return your (AI) understanding of the user_question. This will be displayed in the UI as ‘Did You Mean’   <AIs_understanding_of_the_user_question>, which the user can review and confirm if AIs understanding of their question is correct. “,
+“Confidence_score_in_the_query_generated_for_the_given_user_question”: “Return out of 100 how confident you are of your understanding of the user_question and how accurate the MongoDB_query that you generated, is for the given user_question”,
+"Are_All_RootFieldNames_Needed_Present":"Return Boolean Value if all the RootFieldNames needed for generating mongodb query are present and being used in the query" 
+}
+
+----------
+
+Guidelines:
+
+1. Your output should only be the JavaScript function for executing the MongoDB query. Do not output any other text or comments.
+
+2. Use DynamicArticle.aggregate() correctly and send the output function in Use "DynamicArticle.aggregate()" only and send pipeline in that function itself as "DynamicArticle.aggregate([pipeline_array])"  with exact format and strictly no errors, don't send in the format of "DynamicArticle.aggregate: [pipeline_array]" keep in mind that the output function will automatically be run as MongoDB function using eval in JavaScript.
+
+3. As Continuation to second point never give function in the following nested format {"function":"function": DynamicArticle.aggregate() }.
+4. Ensure the function includes all necessary opening and closing brackets, and the format strictly follows the provided examples
+
+5. For time-based questions by the user, use the "Current Time" as a reference.
+
+6. For queries based on duration if the field is stored in seconds in the database for suppose if call duration is stored in seconds if question is about calls whose duration is greater than 5 minutes while generating MongoDB use 600 seconds instead of 5 or 5*60, use rootFieldName instead of duration in MongoDB query directly.
+
+7. In the output, you should return the date in the ISO string time format without using double quotes around the date function (e.g., new Date("2024-04-15T08:50:26.130Z")).
+
+8. Ensure that you never send timestamps in time period and date-based queries.
+
+9. We are using Nodejs and ExpressJS model structure as the backend for our product. Hence, you are required to user the DynamicArticle model. For example, for aggregate query you should return DynamicArticle.aggregate() instead of db.collection('DynamicArticle').
+
+10. While generating the MongoDB query, in the match query, always add two conditions at first place, first one is {user: new MyObjectId('65040e96e8097b388b1225cd')} and second one is {visibility: "Public"} along with other match conditions for aggregate queries.
+
+11. Ensure that you only use the rootFieldName in the output that you provide i.e the JavaScript function for executing the MongoDB query.
+
+12. For array fields consider each element in the array, to be distinct. for example, for a particular record, if agents=["Kelly Thomas", "Mike Evans"], consider "Kelly Thomas" and "Mike Evans" to be distinct agents or values. Keep this in mind when the user question deals with assets field or any other array type field. for example if the user query is "Who are the top 5 performing agents of the last month", then aggregate must consider distinct agent names for calls with multiple agents. 
+
+13. The date fields in the database and the `CurrentTime` are in UTC. However, the tax group company and all their agents are in the PST time zone. Hence, the UTC date and time needs to be converted to match the PST time when formulating the MongoDB query to ensure that the analysis aligns with the agents' local time zone. You should still use the UTC format in the JS function, but just remember to account for the offset.
+
+14. The offset is that PST is 8 hours behind UTC (UTC-8) from mid November to early March. During daylight savings time between mid March to early November, PST becomes PDT, which is 7 hours behind UTC (UTC-7). You need to account for this offset in the query that you generate. Consider the correct offset based on the "Current Time" and the timeline specified in the "User_Question_in_natural_language_which_needs_to_be_answered". 
+
+15. For example, if the query is "How many calls came in last week from Monday to Friday? Give me a day by day breakdown." - Considering the offset for PST timezone, in the output function that you generate, the Monday needs to start from yyyy-MM-ddT07:00:00.000Z during PDT and yyyy-MM-ddT08:00:00.000Z during PST, so that the output is accurate.
+
+16. Do not use any line breaks, or any other type of formatting in your output. The entire output needs to be sent in a single line.
+
+17. If the questions ask for data to be broken on a day by day basis, consider id = 1 for the first date in the range, id = 2 for the second date in the range, id = 3 for the third date in the range, id = n for the nth date in the range, and so on and even return date for relevant id along with the id.
+Follow the above guidelines very strictly
+
+18. For generating the mongodb use only RootfieldName's never any other fields, because query will not execute for any field other than RootfieldName.
+
+--------------------------------------------
+
+Database_Schema_In_Detail:
+
+- uiFieldName: It is the name of the field as seen by the user in the UI. Hence, the user's natural language question will use uiFieldName to refer to the fields that they want to query in their database
+
+- dbFieldName: It is the corresponding name of the field as represented in our database.
+
+- rootFieldName: It is the corresponding name of the field stored in MongoDB for the given dbFieldName. You are required to use the rootFieldName for generating the MongoDB query.
+
+- Description: It is a short description of what data that field stores, which is provided for your understanding.
+
+- datatype: It is the data type of the values stored in the field, given for your reference to help you in generating the MongoDB query.
+
+- Single Option: For some fields, the values are restricted within a set of options. Single option refers to the fact that the field can store only one of the options listed, for each record in the database.
+
+- Multiple Options: For some fields, the values are restricted within a set of options. Multiple options refers to the fact that the field can store one or more among the options listed as an array, for each record in the database.
+
+List_of_fields_in_the_database_as_per_the_schema:
+
+
+            UIFieldName: Only Show Fully Processed Calls
+            DbFieldName: onlyShowFullyProcessedCalls
+            RootfieldName: visibility
+            Description: 
+            Data Type: string
+            
+        
+            UIFieldName: Time
+            DbFieldName: time
+            RootfieldName: date_1
+            Description: Date and time of when the call started
+            Data Type: date
+            
+        
+            UIFieldName: Direction
+            DbFieldName: direction
+            RootfieldName: string_4
+            Description: The direction of the call, which can be inbound, outbound, or internal
+            Data Type: string
+            Multiple Options: [Any,inbound,outbound,internal,unidentified]
+        
+            UIFieldName: Call Type
+            DbFieldName: callType
+            RootfieldName: string_3
+            Description: Type of the call indicating the participants i.e agents, external representatives, prospect, support
+            Data Type: string
+            Multiple Options: [Any,prospect-calling-into-sales,customer-calling-into-support,external-to-agent,agent-to-external,agent-to-support,agent-to-agent,unidentified]
+        
+            UIFieldName: Campaign
+            DbFieldName: campaign
+            RootfieldName: string_5
+            Description: Name of the lead generation campaign that the call falls under
+            Data Type: string
+            Multiple Options: [Any,1. RVM James,2. MAIL - SNAPBACK,3. LIVE MORT,3. ZAK RVM,4. LIVE TRANSFER USA,4. LA RVM,4b. RENE RVM,5. RVM 3BUFF,6. LA-RVM,6. AVATAR LT RVM,7. JS TRANSFER,7. MCA-RVM,8. TV-RADIO,9. RVM GREEN,9. AVATAR,9a. RVM - ORANGE,9b. DIGITAL - BLUE,9b. META,9e. INACTIVE,AdServ Closer,AdServ TEAM,ADDITIONAL SERVICES,Customer Service,E-Fax,FINANCE,GOOGLE REVIEW PAGE,HUNTER 433,IT Dept Test,Ovation RingCentral,OVATION Website,PRIORITY Queue,ReMail,Rollover RVM James,Service Department (Ring all),Test Call Queue]
+        
+            UIFieldName: Phone Number
+            DbFieldName: phoneNumber
+            RootfieldName: string_1
+            Description: Phone number of the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Agent(s)
+            DbFieldName: agents
+            RootfieldName: array_8
+            Description: Names of the agents that joined the call
+            Data Type: array
+            
+        
+            UIFieldName: # of Seg
+            DbFieldName: numberOfSegments
+            RootfieldName: integer_1
+            Description: Number of segments indicating the number of transfers from one agent to another during the call
+            Data Type: integer
+            
+        
+            UIFieldName: Duration
+            DbFieldName: duration
+            RootfieldName: decimal_1
+            Description: Duration of the call
+            Data Type: integer
+            
+        
+            UIFieldName: InOrOutBound
+            DbFieldName: inOrOutBound
+            RootfieldName: 
+            Description: Is the call inbound or outbound as per RingCentral
+            Data Type: string
+            
+        
+            UIFieldName: Segments
+            DbFieldName: segments
+            RootfieldName: 
+            Description: List of timestamps during indicating a new segment of the call i.e handover from one agent to another
+            Data Type: array
+            
+        
+            UIFieldName: Name
+            DbFieldName: name
+            RootfieldName: string_6
+            Description: Name of the prospect who has tax problems
+            Data Type: string
+            
+        
+            UIFieldName: Nature of Tax Problem
+            DbFieldName: natureOfTaxProblem
+            RootfieldName: array_1
+            Description: List of tax problems as revealed by the prospect
+            Data Type: array of integer codes
+            Multiple Options: [Has tax debt,Unfiled returns,Received letters,Payment plan,Collection action,Other]
+        
+            UIFieldName: Summary of Tax Problem
+            DbFieldName: summaryOfTaxProblem
+            RootfieldName: 
+            Description: Summary of the tax problem as revealed by the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Call Disposition
+            DbFieldName: callDisposition
+            RootfieldName: string_7
+            Description: Single main reason that led to the end of the call
+            Data Type: integer
+            Multiple Options: [Closed/Won,Prospect Disqualified,Prospect uninterested,Call ended abruptly,Lack of trust,Follow up scheduled,Prospect to call back,Voicemail,IVR,Error with the number,Prospect did not answer,Prospect asked to be taken off the calling list,Other]
+        
+            UIFieldName: Summary of Call Disposition
+            DbFieldName: summaryOfCallDisposition
+            RootfieldName: 
+            Description: Summary of the single main reason that led to the end of the call
+            Data Type: string
+            
+        
+            UIFieldName: IRS Prac Call
+            DbFieldName: IRSPracCall
+            RootfieldName: boolean_1
+            Description: Did IRS agent join the call for a three way conversation with the tax group agent and the prospect?
+            Data Type: boolean
+            
+        
+            UIFieldName: IRS Agent Name(s)
+            DbFieldName: IRSAgentNames
+            RootfieldName: 
+            Description: Names of all IRS agents that joined the call for a three way conversation with the tax group agent and the prospect
+            Data Type: array
+            
+        
+            UIFieldName: Tax Debt as per Prac Call
+            DbFieldName: taxDebtAsPerPracCall
+            RootfieldName: decimal_2
+            Description: Amount of tax debt owed by the prospect as revealed by the IRS agent
+            Data Type: float
+            
+        
+            UIFieldName: Unfiled Years as per Prac Call
+            DbFieldName: unfiledYearsAsPerPracCall
+            RootfieldName: array_2
+            Description: List of unfiled years by the prospect as revealed by the IRS agent
+            Data Type: array
+            Single Option: [Enumerate each year that is unfiled as stated by the IRS agents as an integer]
+        
+            UIFieldName: IRS Prac Call Summary
+            DbFieldName: IRSPracCallSummary
+            RootfieldName: 
+            Description: Summary of the tax problem as revealed by the IRS agent
+            Data Type: string
+            
+        
+            UIFieldName: Tax Debt as per Prospect
+            DbFieldName: taxDebtAsPerProspect
+            RootfieldName: decimal_3
+            Description: Amount of tax debt owed as revealed by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Tax Debt as per Prospect
+            DbFieldName: taxDebtAsPerProspectStatus
+            RootfieldName: string_24
+            Description: Status of the discussion regarding the tax debt owed as per the prospect
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that the tax debt owed is low,Prospect said that the tax debt owed is average,Prospect said that the tax debt owed is high,Prospect shared the tax debt owed as a numerical value,Other]
+        
+            UIFieldName: Unfiled Years as per Prospect
+            DbFieldName: unfiledYearsAsPerProspect
+            RootfieldName: array_3
+            Description: List of unfiled years as revealed by the prospect
+            Data Type: array
+            Single Option: [Enumerate each year that is unfiled as stated by the prospect as an integer. Do not confuse this by what is stated by the IRS agent during the IRS prac call.]
+        
+            UIFieldName: Owes Tax Debt to State
+            DbFieldName: owesTaxDebtToState
+            RootfieldName: boolean_2
+            Description: Does the prospect owe any tax debt to US states?
+            Data Type: boolean
+            
+        
+            UIFieldName: States Owed To as per Prospect
+            DbFieldName: statesOwedToAsPerProspect
+            RootfieldName: 
+            Description: List of US states that the prospect owes tax debt to
+            Data Type: array
+            Single Option: [All 50 US states]
+        
+            UIFieldName: Tax Debt Owed To States
+            DbFieldName: taxDebtOwedToStates
+            RootfieldName: decimal_4
+            Description: Amount of tax debt owed to states as revealed by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Job
+            DbFieldName: job
+            RootfieldName: string_8
+            Description: Occupation of the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Job Category
+            DbFieldName: jobCategory
+            RootfieldName: string_9
+            Description: Category that the prospect's job falls under
+            Data Type: integer
+            Multiple Options: [Blue Collar Employee,White Collar Employee,Blue Collar Entrepreneur,White Collar Entrepreneur,Unemployed,Retired,Other]
+        
+            UIFieldName: Monthly Income
+            DbFieldName: monthlyIncome
+            RootfieldName: decimal_5
+            Description: Monthly income revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Monthly Income
+            DbFieldName: monthlyIncomeStatus
+            RootfieldName: string_10
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's monthly income
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their monthly income is low,Prospect said that their monthly income is average,Prospect said that their monthly income is high,Prospect shared the monthly income as a numerical value,Other]
+        
+            UIFieldName: Income Type
+            DbFieldName: incomeType
+            RootfieldName: array_4
+            Description: Types of income categories that contribute to prospect's monthly income
+            Data Type: array of integer codes
+            Multiple Options: [1099,W2,Fixed Income,Retirement Income,Disability,Other]
+        
+            UIFieldName: Credit Score
+            DbFieldName: creditScore
+            RootfieldName: integer_2
+            Description: Credit score revealed as a numerical value by the prospect
+            Data Type: integer
+            
+        
+            UIFieldName: Credit Score
+            DbFieldName: creditScoreStatus
+            RootfieldName: string_11
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's credit score
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their credit score is low,Prospect said that their credit score is average,Prospect said that their credit score is high,Prospect shared the credit score as a numerical value,Other]
+        
+            UIFieldName: Soft Credit Pull
+            DbFieldName: softCreditPullStatus
+            RootfieldName: string_12
+            Description: Status of the discussion between the tax group agent and prospect regarding running of a soft credit pull of the prospect's credit scoreIs the prospect a home owner?
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect denied permission,Prospect approved,Other]
+        
+            UIFieldName: Homeowner
+            DbFieldName: homeowner
+            RootfieldName: boolean_3
+            Description: Is the prospect a home owner?
+            Data Type: boolean
+            
+        
+            UIFieldName: Home Value
+            DbFieldName: homeValue
+            RootfieldName: decimal_6
+            Description: Home value revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Home Value
+            DbFieldName: homeValueStatus
+            RootfieldName: string_13
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's home value
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their home value is low,Prospect said that their home value is average,Prospect said that their home value is high,Prospect shared the home value as a numerical value,Other]
+        
+            UIFieldName: Mortgage Amount
+            DbFieldName: mortgageAmount
+            RootfieldName: decimal_7
+            Description: Mortgage amount revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Mortgage Amount
+            DbFieldName: mortgageAmountStatus
+            RootfieldName: string_14
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's mortgage amount
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their mortgage amount is low,Prospect said that their mortgage amount is average,Prospect said that their mortgage amount is high,Prospect shared the mortgage amount as a numerical value,Other]
+        
+            UIFieldName: House Rent
+            DbFieldName: houseRent
+            RootfieldName: decimal_8
+            Description: House rent revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: House Rent
+            DbFieldName: houseRentStatus
+            RootfieldName: string_15
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's house rent
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their house rent is low,Prospect said that their house rent is average,Prospect said that their house rent is high,Prospect shared the house rent as a numerical value,Other]
+        
+            UIFieldName: Has Other Assets
+            DbFieldName: hasOtherAssets
+            RootfieldName: boolean_4
+            Description: Does the prospect own any other assets beyond their bank balance and home?
+            Data Type: boolean
+            
+        
+            UIFieldName: Other Assets Breakdown
+            DbFieldName: otherAssetsBreakdown
+            RootfieldName: string_16
+            Description: Breakdown of the other assets owned by the prospect along with their values
+            Data Type: string
+            
+        
+            UIFieldName: Total Value Of Assets
+            DbFieldName: totalValueOfAssets
+            RootfieldName: decimal_9
+            Description: Total value of assets revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Total Value of Assets
+            DbFieldName: assetsStatus
+            RootfieldName: string_17
+            Description: Status of the discussion between the tax group agent and prospect regarding the other assets owned by the prospect
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that the total value of their assets is low,Prospect said that the total value of their assets is average,Prospect said that the total value of their assets is high,Prospect shared the total value of their assets as a numerical value,Other]
+        
+            UIFieldName: Prospect Banks With
+            DbFieldName: prospectBanksWith
+            RootfieldName: array_7
+            Description: List of banks where prospect has an account
+            Data Type: array
+            
+        
+            UIFieldName: Bank Balance
+            DbFieldName: bankBalance
+            RootfieldName: decimal_10
+            Description: Bank Balance revealed as a numerical value by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Bank Balance
+            DbFieldName: bankBalanceStatus
+            RootfieldName: string_18
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's bank balance
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect said that their bank balance is low,Prospect said that their bank balance is average,Prospect said that their bank balance is high,Prospect shared the bank balance as a numerical value,Other]
+        
+            UIFieldName: Social Security Number
+            DbFieldName: socialSecurityNumber
+            RootfieldName: integer_3
+            Description: Social security number of the prospect
+            Data Type: integer
+            
+        
+            UIFieldName: Social Security Number
+            DbFieldName: socialSecurityNumberStatus
+            RootfieldName: string_19
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's social security number
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect did not know,Prospect refused to share,Prospect shared their SSN,Other]
+        
+            UIFieldName: Date of Birth
+            DbFieldName: dateOfBirth
+            RootfieldName: date_2
+            Description: Date of birth of the prospect
+            Data Type: date
+            
+        
+            UIFieldName: Date of Birth
+            DbFieldName: dateOfBirthStatus
+            RootfieldName: string_20
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's date of birth
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect refused to share,Prospect shared their date of birth,Other]
+        
+            UIFieldName: Address
+            DbFieldName: address
+            RootfieldName: string_21
+            Description: Residential address of the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Address
+            DbFieldName: addressStatus
+            RootfieldName: string_22
+            Description: Status of the discussion between the tax group agent and prospect regarding the prospect's residential address
+            Data Type: integer
+            Multiple Options: [Agent did not ask,Prospect refused to share,Prospect shared their address,Other]
+        
+            UIFieldName: State
+            DbFieldName: state
+            RootfieldName: string_23
+            Description: State of residence of the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Call Language
+            DbFieldName: callLanguage
+            RootfieldName: array_6
+            Description: List of languages spoken during the call
+            Data Type: array of strings
+            
+        
+            UIFieldName: Follow-up Scheduled
+            DbFieldName: followUpScheduled
+            RootfieldName: boolean_5
+            Description: Was there a follow-up discussed between the tax group agent and the prospect?
+            Data Type: boolean
+            
+        
+            UIFieldName: Follow-up Date & Time
+            DbFieldName: followUpDateTime
+            RootfieldName: 
+            Description: Date and time of the follow discussed between the tax group agent and the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Fee Quoted
+            DbFieldName: feeQuoted
+            RootfieldName: decimal_23
+            Description: Service fee quoted as a numerical value by the tax group agent
+            Data Type: float
+            
+        
+            UIFieldName: Fee Quoted
+            DbFieldName: feeQuotedStatus
+            RootfieldName: string_25
+            Description: Status of discussion between the tax group agent and prospect regarding the service fee
+            Data Type: integer
+            Multiple Options: [Prospect did not ask,Agent did not answer,Agent quoted a fee,Other]
+        
+            UIFieldName: Tax Problem statement adherence
+            DbFieldName: taxProblemStatementAdherence
+            RootfieldName: decimal_18
+            Description: How closely does the tax group agent adhere to the following sentence -- 'We are a private company comprised of Tax attorneys and Enrolled Agents and we specialize in Tax mediation'.
+            Data Type: float
+            
+        
+            UIFieldName: Soft Credit Pull statement adherence
+            DbFieldName: softCreditPullStatementAdherence
+            RootfieldName: decimal_19
+            Description: How closely does the tax group agent adhere to the following sentence -- 'I need your verbal permission to do a red flag check by the way of a soft credit pull'.
+            Data Type: float
+            
+        
+            UIFieldName: IRS Authorization statement adherence
+            DbFieldName: IRSAuthorizationStatementAdherence
+            RootfieldName: decimal_20
+            Description: How closely does the tax group agent adhere to the following sentence -- 'Would you run my client through a verbal verification and authorization for me to speak on their behalf regarding any tax matters?'.
+            Data Type: float
+            
+        
+            UIFieldName: Income and Assets Script Adherence
+            DbFieldName: incomeAndAssetsScriptAdherence
+            RootfieldName: decimal_21
+            Description: How closely does the tax group agent adhere to the following script -- 'Ok so let’s review what is going on now? What do you do for work? What is your primary source of income? Ok great, how are you paid? Weekly? Every other Friday? Twice a month? how does it work? Ok so when you look at your paycheck each pay period how much do you earn? What is your take home pay? Ok Great the next thing we need to do is evaluate your assets but before we do that, are there any other sources of income I may have missed? Any part time jobs? side jobs? Anything like that? Ok, Good. Let's take a look at your assets. Do you own your own home or do you rent? Ok - what is the loan balance? Ok, great! As far as the assets might go, Do you have any retirement accounts? 401k, stocks, bonds, Real Estate? any investments of any sort? Ok, any Assets we may have not considered? Large ticket items like a boat or motorcycle? anything like that? Ok and lastly, if the IRS were to assess the value of your Bank Account, what is your current balance as of today? If the IRS were to assess your credit worthiness? What would you say your credit is like? Do you happen to know your credit score? Do you know what your credit utilization Ratio is? The amount of available credit you have vs credit you are using?'.
+            Data Type: float
+            
+        
+            UIFieldName: Call Conclusion Script Adherence
+            DbFieldName: callConclusionScriptAdherence
+            RootfieldName: decimal_22
+            Description: How closely does the tax group agent adhere to the following script -- 'So, good news this is a case we are willing to take on. Based on the information you provided we can definitely help you quite considerably actually. By the time this is all said and done you wont have to pay the IRS anywhere near the amount you owe them.The first step in the process will be to contact the IRS on your behalf. We have something here called the Practioner Priority Service Line. Its a line the IRS has available for Tax Attorneys and CPAs that allows us to gather all the current information on your IRS Account. That way we can see and know everything that the IRS knows about you ok? Once we see and know what they see and know we will be able to tell exactly what you owe - including penalties and interest, what tax years need to be addressed? Additionally and most importantly they will let us know the status of your account'.
+            Data Type: float
+            
+        
+            UIFieldName: Tax Problem
+            DbFieldName: taxProblem
+            RootfieldName: decimal_11
+            Description:  Score out of 10 indicating the severity of the prospect's tax problem
+            Data Type: float
+            
+        
+            UIFieldName: Ability to Pay
+            DbFieldName: abilityToPay
+            RootfieldName: decimal_12
+            Description: Score out of 10 indicating the prospect's ability to pay the service fee quoted by the tax company
+            Data Type: float
+            
+        
+            UIFieldName: Profile Completion
+            DbFieldName: profileCompletion
+            RootfieldName: decimal_13
+            Description: Score out of 10 indicating the completeness of the prospect's profile based on the questions asked by the tax group agent and the corresponding answers revealed by the prospect
+            Data Type: float
+            
+        
+            UIFieldName: Cooperativeness
+            DbFieldName: cooperativeness
+            RootfieldName: decimal_14
+            Description: Score out of 10 indicating how cooperative the prospect was in answering the questions asked by the tax group agent
+            Data Type: float
+            
+        
+            UIFieldName: Agent Performance
+            DbFieldName: agentPerformance
+            RootfieldName: decimal_15
+            Description: Score out of 10 indicating the quality of performance of the tax group agent
+            Data Type: float
+            
+        
+            UIFieldName: Compliance
+            DbFieldName: compliance
+            RootfieldName: decimal_16
+            Description: Score out of 10 indicating how closely the tax group agent followed the compliance requirements
+            Data Type: float
+            
+        
+            UIFieldName: Script Adherence
+            DbFieldName: scriptAdherence
+            RootfieldName: decimal_17
+            Description: Percentage score indicating the average of how closely the tax group agent adhered to all the statements and scripts they're expected to adhere to
+            Data Type: float
+            
+        
+            UIFieldName: Call Abstract
+            DbFieldName: callAbstract
+            RootfieldName: 
+            Description: A string that represents the five most important statistics regarding the prospect -- Tax Debt as per the prospect, Tax debt as per IRS, Credit Score, Bank Balance, Monthly Income
+            Data Type: string
+            
+        
+            UIFieldName: Call Summary
+            DbFieldName: callSummary
+            RootfieldName: 
+            Description: Summary of the conversation
+            Data Type: string
+            
+        
+            UIFieldName: Objections Summary
+            DbFieldName: objectionsSummary
+            RootfieldName: 
+            Description: Summary of the objections raised by the prospect
+            Data Type: string
+            
+        
+            UIFieldName: Recommendations
+            DbFieldName: recommendations
+            RootfieldName: 
+            Description: Recommendations to the agent based on their performance
+            Data Type: string
+            
+        
+
+---------------------------------------------
+
+Current Time: 2024-07-17T12:37:20.355Z
+
+---------------------------------------------
+
+Conclusion:
+
+Understand the context and objective thoroughly. Use all the information provided, including the guidelines, output format, "Database_Schema_In_Detail", "Current Time", to accurately interpret the "User_Question_in_natural_language_which_needs_to_be_answered" and return a MongoDB query that follows the specified JavaScript function format
+
+Task 2. Filtering
+
+Objective:
+
+You are required to interpret and understand the user's natural language question, return a JSON array that explains the different fields and the respective filter options that the user may have requested for in their question.
+
+Use the Field Mapping provided to you to understand what kind of data is stored in each field, and what kind of traditional filters have been implemented for each field. 
+
+You are provided with the details of each type of filter under "Filter Types". The JSON output that you provide needs to mimic the condition of how the filter would work traditionally in the UI (manual input by the user). The output format will change slightly depending on the type of filter.
+
+Output JSON format for Task 2.
+
+    {
+        "dbFieldName1":"filterValue1",
+        "dbFieldName2":"filterValue2"
+    }
+
+
+Filter Types:
+
+- Search - In the UI, the search filter provides an input box to the user. The user's input will be used to filter through calls that meet the criteria. This is generally used to search through fields that are string type or array of strings.
+
+- Numerical - In the UI, the numerical filter provides two input boxes to the user for Min and Max value. The user can input data in atleast one or both the boxes to set the criteria. This is used for filtering based on fields that integer type or decimal type. This filter allows users to filter based on one of the following conditions i) Greater than or equal to the Min value inputted, ii) Lesser than or equal to the Max value inputted, iii) Between Min and Max values inputted
+
+- Date - In the UI, the date filter provides an option to filter based on timelines ("last one week", "last one month", "last 3 months", etc). The output should be in the ISO date format.
+
+- Boolean - In the UI, the boolean filter allows users to select either true or false as the criteria for the respective field.
+
+- Dropdown - In the UI, the dropdown filter allows users to select one among the many possible options stored in a particular field. This is used to filter through fields which are string type or array of integers. These value of these fields is only limited to a certain set of options, which is then provided to the users as a dropdown to set the filter criteria.
+
+Guidelines
+
+1. For time-based questions by the user, use the "Current Time" as a reference.
+
+2. In the output, ensure that you always return the date in the ISO string time format
+
+3. Only for the Numerical type of filter, the JSON output format will be slightly different to accomodate for two potential values (both Max and Min). The JSON output format for Numerical filter type should be: 
+    note : u need to put _min and _max in the end, and with just dbFieldname u need to put like, > minValue && < maxValue
+
+    {
+        "dbFieldName_min": "minValue",
+        "dbFieldName_max": "maxValue",
+        "dbFieldName": "> minValue && < maxValue",
+    }
+
+
+4. For numerical type of filter, if the user's questions sets the criteria for only one of MinValue and MaxValue, return the other one as blank in the JSON array. 
+ 
+Conclusion:
+
+Use all the information provided to you (Field Mapping, Filter Types, Glossary of Terms, Current Time) to understand and interpret the User Question. Follow the guidelines and the output format to accurately return the output JSON in the format specified.
+
+--------------------------------------------------------------------------------------------
+
+Output from Task 1, Task 2:
+
+The API response should only include the outputs of Task 1 ("Analysis"), Task 2 ("Filtering") . Do not include the names of the Tasks or any other text that could break the JSON format explained above.
+
+Final format must look this function from task 1 and filter from task 2
+{
+    "function": "async function getAggregationResults() {
+    try {
+        const results = await DynamicArticle.aggregate([
+            {
+                $match: {
+                    user: new MyObjectId('65040e96e8097b388b1225cd'),
+                    visibility: 'Public',
+                    date_1: {
+                        $gte: new Date("2024-05-07T00:00:00.000Z"),
+                        $lt: new Date("2024-05-14T00:00:00.000Z")
+                    }
+                }
+            },
+            {
+                $project: {
+                    dayOfWeek: { $dayOfWeek: "$date_1" },
+                    convertedToClient: {
+                        $cond: {
+                            if: {
+                                $eq: ["$string_7", "Closed/Won"]
+                            },
+                            then: 1,
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$dayOfWeek",
+                    totalCalls: { $sum: 1 },
+                    conversions: { $sum: "$convertedToClient" }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            }
+        ]);
+
+        return results;
+    } catch (error) {
+        console.error(error);
+    }",
+    "filter": {
+        IRSPracCall: 'true',
+        agentPerformance_min: '7',
+        agentPerformance_max: '10',
+        agentPerformance: '> 7 && < 10'
+      },
+“AIs_understanding_of_the_user_question”:  “Use the database_schema provided to you to understand the user_question thoroughly and return your (AI) understanding of the user_question. This will be displayed in the UI as ‘Did You Mean’   <AIs_understanding_of_the_user_question>, which the user can review and confirm if AIs understanding of their question is correct. “,
+“Confidence_score_in_the_query_generated_for_the_given_user_question”: “Return out of 100 how confident you are of your understanding of the user_question and how accurate the MongoDB_query that you generated, is for the given user_question”,
+"Are_All_RootFieldNames_Needed_Present":"Return Boolean Value if all the RootFieldNames needed for generating mongodb query are present and being used in the query" 
+}

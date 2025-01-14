@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "703381186801",
+    "project_id": "astronarad-a3362",
+    "storage_bucket": "astronarad-a3362.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703381186801:android:6883e3ad484a3f14abe150",
+        "android_client_info": {
+          "package_name": "com.AstroNarad"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9id4yPARYoa5lunzsheGuS_qWgQjMsWM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,9 @@
 {
   "name": "AstroNarad",
-  "displayName": "AstroNarad"
+  "displayName": "AstroNarad",
+  "android": {
+      "package": "com.AstroNarad",
+      "runtimeVersion": "1.0.0"
+    }
 }
+

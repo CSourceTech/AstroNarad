@@ -1,13 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
 import Images from '../../assets/Images';
 import { verifyOtp } from '../../Api/authService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { changeLoginStatus, setEmail, setToken } from '../../Redux/authSlice';
 
 const Otp = ({ route, navigation }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [timer, setTimer] = useState(10); 
     const [timerActive, setTimerActive] = useState(true);
     const { phone, email } = route.params;
+    const dispatch = useDispatch();
 
     const inputs = useRef([]);
 
@@ -63,22 +67,49 @@ const Otp = ({ route, navigation }) => {
         navigation.navigate('Login');
     };
 
-    const handleVerify = async () => {
-        const otpCode = otp.join(''); 
-        if (otpCode.length === 6) {
+    // const handleVerify = async () => {
+    //     const otpCode = otp.join(''); 
+    //     if (otpCode.length === 6) {
+    //         try {
+    //             const response = await verifyOtp(email, otpCode);
+    //             console.log('OTP verified successfully:', response.data);
+    //             alert("OTP verified successfully");
+    //             navigation.navigate('DOB'); 
+    //         } catch (error) {
+    //             console.error('Error verifying OTP:', error.response ? error.response.data : error.message);
+    //             alert('Failed to verify OTP. Please try again.');
+    //         }
+    //     } else {
+    //         alert("Please enter a valid 6-digit OTP.");
+    //     }
+    // };
+
+    const handleVerify = () => {
+        const otpCode = otp.join('');
+        console.log('OTP:', otpCode);
+        console.log('Mobile:', email);
+
+        verifyOtp(email, otpCode)
+        .then(async (response) => {
+            console.log('Response Data:', JSON.stringify(response.data));
+
             try {
-                const response = await verifyOtp(email, otpCode);
-                console.log('OTP verified successfully:', response.data);
-                alert("OTP verified successfully");
-                navigation.navigate('DOB'); 
+                await AsyncStorage.setItem('accessToken', response.data.accessToken);
             } catch (error) {
-                console.error('Error verifying OTP:', error.response ? error.response.data : error.message);
-                alert('Failed to verify OTP. Please try again.');
-            }
-        } else {
-            alert("Please enter a valid 6-digit OTP.");
-        }
-    };
+                console.error('Failed to store token:', error);
+              }
+              dispatch(setToken(response.data.accessToken));
+              dispatch(setEmail(response.data.email));
+              dispatch(changeLoginStatus(true));
+
+              navigation.navigate('DOB'); 
+            })
+            .catch(error => {
+                console.error('OTP Verification Error:', error);
+                setErrorMessage('Invalid OTP, Please try again.');
+            });
+              
+    }
 
     const handleResend = () => {
         setTimer(60); 
@@ -98,6 +129,8 @@ const Otp = ({ route, navigation }) => {
                     <Image source={Images.arrowLeft} style={styles.Back} />
                 </TouchableOpacity>
             </View>
+            
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.headerContainer}>
                 <Text style={styles.title}>Enter Pin Code</Text>
                 <Text style={styles.subtitle}>Enter the 6-digit code we just sent to your phone number {phone} or {email}</Text>
@@ -130,6 +163,7 @@ const Otp = ({ route, navigation }) => {
             <TouchableOpacity style={styles.button} onPress={handleVerify}>
                 <Text style={styles.buttonText}>Verify and Create Account</Text>
             </TouchableOpacity>
+            </ScrollView>
         </View>
     );
 };
@@ -148,6 +182,9 @@ const styles = StyleSheet.create({
     Back: {
         width: 23,
         height: 20,
+    },
+    scrollContainer: {
+        paddingBottom: 200,
     },
     headerContainer: {
         alignItems: "center",
@@ -178,18 +215,20 @@ const styles = StyleSheet.create({
     },
     otpContainer: {
         flexDirection: 'row',
-        gap: 21,
+        gap: 11,
         marginBottom: 20,
+        justifyContent: 'center',
     },
     input: {
         width: 40,
-        height: 40,
+        height: 50,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
         textAlign: 'center',
         fontSize: 18,
-        left: "12%",
+        // left: "12%",
+        // left: 10,
         color:'black',
     },
     resendContainer: {

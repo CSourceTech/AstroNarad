@@ -1,16 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, Image, TouchableOpacity } from 'react-native';
 import Images from '../../assets/Images';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get("window");
 
 const cardData = [
-    { id: 1, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: 'Read Now' },
-    { id: 2, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: 'Read Now' },
-    { id: 3, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: 'Read Now' },
+    { id: 1, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: '▶️  Read Now' },
+    { id: 2, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: '▶️  Read Now' },
+    { id: 3, title2: 'Horoscope Of The Day', title3: 'Unveil Your Fate Now', description: '▶️  Read Now' },
 ];
 
 const HoroscopeOfTheDay = () => {
+    const navigation = useNavigation();
+
+    const navigate_to_DailyHoroscope = () => {
+        navigation.navigate('DailyHoroscope')
+    }
     return (
         <View style={styles.container}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
@@ -21,7 +27,7 @@ const HoroscopeOfTheDay = () => {
                         <View style={styles.header}>
                             <Text style={styles.subtitle}>{card.title3}</Text>
                             <View style={styles.Readbutton}>
-                            <TouchableOpacity><Text style={styles.description}>{card.description}</Text></TouchableOpacity>
+                            <TouchableOpacity onPress={navigate_to_DailyHoroscope}><Text style={styles.description}>{card.description}</Text></TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -35,7 +41,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F4F1F5',
-        padding: width * 0.05,
+        padding: width * 0.01,
+        marginTop: 15
     },
     scrollContainer: {
         flexDirection: 'row',
@@ -44,8 +51,8 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: '#656565',
         borderWidth: 1,
-        width: width * 0.85, 
-        height: height * 0.25,
+        width: width * 0.93, 
+        // height: height * 0.25,
         padding: width * 0.04,
         marginHorizontal: width * 0.02, 
         borderRadius: 10,
@@ -72,7 +79,7 @@ const styles = StyleSheet.create({
     },
     Background: {
         opacity: 1,
-        left: '43%',
+        left: '47%',
         width: width * 0.52,
         height: height * 0.25,
         position: 'absolute'
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
         fontWeight: '700'
     },
     description: {
-        fontSize: 16,
+        fontSize: 12,
         fontWeight: '600',
         color: '#835C5C',
         padding: 8,
@@ -102,7 +109,8 @@ const styles = StyleSheet.create({
         borderRadius: 25
     },
     Readbutton: {
-        width: '30%',
+        // width: '30%',
+        width: 100,
     },
 });
 

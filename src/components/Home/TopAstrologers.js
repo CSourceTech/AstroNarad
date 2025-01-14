@@ -5,7 +5,7 @@ const { width, height } = Dimensions.get("window");
 
 const cardData = [
     { id: 1, image: require('../../assets/TopAstrologers.png'), title1: 'Love'},
-    { id: 2, title1: 'Marriage'},
+    { id: 2, image: require('../../assets/TopAstrologers.png'), title1: 'Love'},
 ];
 
 const TopAstrologers = () => {
@@ -31,7 +31,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F4F1F5',
-        padding: width * 0.05,
+        padding: width * 0.01,
+        marginTop: 5
     },
     scrollContainer: {
         flexDirection: 'row',
@@ -39,13 +40,17 @@ const styles = StyleSheet.create({
     },
     card: {
         // backgroundColor: '#C4C4C4',
-        width: width * 0.4, 
-        height: height * 0.15,
+        width: 150,
+        height: 200,
+        // width: width * 0.4, 
+        // height: height * 0.15,
         padding: width * 0.04,
         marginHorizontal: width * 0.02, 
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#D7D7D7',
+        borderRadius: 999,
+        borderBottomEndRadius: 999,
+        borderTopRightRadius: 999,
+        // borderWidth: 1,
+        // borderColor: '#D7D7D7',
     },
     header1: {
         flexDirection: 'row',
@@ -54,21 +59,24 @@ const styles = StyleSheet.create({
         right: '5%'
     },
     title: {
-        fontSize: width * 0.045, 
+        fontSize: width * 0.030, 
         fontWeight: 'bold',
         color: '#FFFFFF',
         padding: 6,
         backgroundColor: '#656565',
         borderRadius: 8,
-        right: '10%'
+        // right: '10%'
+        left: '5%'
     },
     image: {
-        width: width * 0.42,
-        height: height * 0.20, 
-        borderRadius: 10, 
+        // width: width * 0.42,
+        // height: height * 0.20, 
+        width: 150,
+        height: 220,
+        borderRadius: 999, 
         marginBottom: 10, 
-        bottom: '20%',
-        right: '8%'
+        bottom: '50%',
+        // right: '8%'
     },
     HeaderTitle: {
         position: 'absolute',

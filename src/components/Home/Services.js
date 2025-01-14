@@ -1,27 +1,38 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get("window");
 
 const cardData = [
-    { id: 1, image: require('../../assets/DailyHoroscope.png'), description: 'Daily Horoscope' },
-    { id: 2, image: require('../../assets/Tarot.png'), description: 'Tarrot Cards' },
-    { id: 3, image: require('../../assets/FreeKundali.png'), description: 'Free Kundali' },
-    { id: 4, image: require('../../assets/KundaliMatching.png'), description: 'Kundali Matching' },
-    { id: 5, image: require('../../assets/KundaliMatching.png'), description: 'Kundali Matching' }, 
+    { id: 1, image: require('../../assets/DailyHoroscope.png'), description: 'Daily Horoscope', screen: 'DailyHoroscope' },
+    { id: 2, image: require('../../assets/Tarot.png'), description: 'Tarrot Cards', screen: 'TarrotCards' },
+    { id: 3, image: require('../../assets/FreeKundali.png'), description: 'Free Kundali', screen: 'FreeKundali' },
+    { id: 4, image: require('../../assets/KundaliMatching.png'), description: 'Kundali Matching', screen: 'KundaliMatching' },
+    { id: 5, image: require('../../assets/KundaliMatching.png'), description: 'Kundali Matching', screen: 'KundaliMatching' }, 
 ];
 
 const Services = () => {
+    const navigation = useNavigation();
+
+    const navigateToScreen = (screenName) => {
+        navigation.navigate(screenName);
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
                 {cardData.map((card) => (
-                    <View key={card.id} style={styles.card}>
+                    <TouchableOpacity 
+                        key={card.id} 
+                        style={styles.card} 
+                        onPress={() => navigateToScreen(card.screen)}
+                    >
                         <View style={styles.header}>
-                            <Image source={card.image} style={styles.image} resizeMode="contain"/>
+                            <Image source={card.image} style={styles.image} resizeMode="contain" />
                             <Text style={styles.description}>{card.description}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
         </View>
@@ -32,26 +43,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F4F1F5',
-        padding: width * 0.05,
+        padding: width * 0.01,
+        marginTop: 5
     },
     scrollContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     card: {
-        width: width * 0.3, 
-        height: height * 0.25,
-        padding: width * 0.04,
+        // width: width * 0.3, 
+        // height: height * 0.25,
+        width: 130,
+        height: 190,
+        // width: '18%',
+        // height: '100%',
+        padding: width * 0.01,
         marginHorizontal: width * 0.02, 
         borderRadius: 10,
         borderWidth: 2,
         borderColor: '#F4F4F4',
-
         backgroundColor: 'white', 
-        // elevation: 3, // Adjust elevation for shadow depth
-
-        // shadowOpacity: 0.25, // Shadow opacity
-        // shadowRadius: 3.5, // Shadow radius
     },
     header1: {
         flexDirection: 'row',
@@ -65,7 +76,7 @@ const styles = StyleSheet.create({
         alignItems: 'center', 
     },
     image: {
-        width: '100%', 
+        width: '50%', 
         height: height * 0.15, 
         borderRadius: 10, 
         marginBottom: 10, 
@@ -88,11 +99,12 @@ const styles = StyleSheet.create({
         textAlign: 'center', 
     },
     description: {
-        width: width * 0.3,
+        // width: width * 0.3,
         fontWeight: '600',
-        fontSize: 22,
+        fontSize: 20,
         color: '#1E1E1E',
         textAlign: 'center', 
+        bottom: 20,
     },
 });
 
